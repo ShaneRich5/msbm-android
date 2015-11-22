@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MSBM</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_course">CourseActivity</string>
+    <string name="title_activity_connect">ConnectActivity</string>
+    <string name="hint_registration_no">Registration Number</string>
+    <string name="login">Login</string>
+    <string name="hint_password">Password</string>
+</resources>

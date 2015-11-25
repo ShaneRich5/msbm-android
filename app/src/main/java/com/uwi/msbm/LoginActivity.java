@@ -23,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import butterknife.Bind;
@@ -38,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     String id = "";
     String token = "";
     String registrationNo = "";
+    HashMap<String , String> parametersHash;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +66,8 @@ public class LoginActivity extends AppCompatActivity {
 
     public void submitUserId() {
 //        http://ourvle.mona.uwi.edu/webservice/rest/server.php?wstoken=e23c35eeda5b1799ffcea51cec0c19b2&wsfunction=core_webservice_get_site_info&moodlewsrestformat=json
-        String url = Constants.MOODLE_URL + Constants.WEB_SERVICE;
+        parametersHash = buildHashMap("wstoken" , token , "wsfunction" ,  "core_webservice_get_site_info" , "moodlewsrestformat" , "json");
+        String url = Constants.MOODLE_URL + Constants.WEB_SERVICE + buildQueryParameters(parametersHash);
 
 
         JsonObjectRequest request = new JsonObjectRequest
@@ -74,7 +77,7 @@ public class LoginActivity extends AppCompatActivity {
                         try {
                             id = response.getString("userid");
 
-                            if (id.length() != 0) {
+                            if (!id.isEmpty()) {
                                 SessionManager session = new SessionManager(LoginActivity.this);
                                 session.createLoginSession(registrationNo, id, token);
 
@@ -114,11 +117,13 @@ public class LoginActivity extends AppCompatActivity {
         final String password = etPassword.getText().toString();
 
         etPassword.setText("");
-        btnLogin.setEnabled(false);
+        //btnLogin.setEnabled(false);
 
 //        "http://ourvle.mona.uwi.edu/login/token.php?username=620065739&password=19941206&service=moodle_mobile_app"
 
-        String url = Constants.MOODLE_URL + Constants.LOGIN + buildQueryParameters(registrationNo , password);
+
+        parametersHash =  buildHashMap("username" , registrationNo , "password" , password , "service" , "moodle_mobile_app");
+        String url = Constants.MOODLE_URL + Constants.LOGIN + buildQueryParameters(parametersHash);
 
         JsonObjectRequest request = new JsonObjectRequest
                 (Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
@@ -135,8 +140,8 @@ public class LoginActivity extends AppCompatActivity {
                                 token = response.getString("token");
                                 Log.d("MOODLE" , token);
                             }else{
-                                Log.d("MOODLE" , response.toString());
-                                Toast.makeText(getApplicationContext() , "Unexpected Error" , Toast.LENGTH_SHORT);
+                                Log.d("MOODLE", response.toString());
+                                Toast.makeText(getApplicationContext(), "Unexpected Error", Toast.LENGTH_SHORT);
                             }
 
                             submitUserId();
@@ -160,9 +165,6 @@ public class LoginActivity extends AppCompatActivity {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("Content-Type", "application/json");
-                headers.put("username", registrationNo);
-                headers.put("password", password);
-                headers.put("service", "moodle_mobile_app");
                 return headers;
             }
         };
@@ -171,8 +173,24 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    private String buildQueryParameters(String username , String password){
-       return String.format("?username=%s&password=%s&service=moodle_mobile_app" , username , password);
+    //Builds query parameters from HashMap
+    //For example ?username=x&password=y
+    private String buildQueryParameters(Map<String , String> parameters){
+        String parameterString = "?";
+        Iterator iterator = parameters.entrySet().iterator();
+        while(iterator.hasNext()){
+            HashMap.Entry pair = (HashMap.Entry)iterator.next();
+            parameterString += String.format("%s=%s&" , pair.getKey() , pair.getValue());
+            iterator.remove();
+        }
+       return parameterString.substring(0 , parameterString.length()-1);
+    }
+
+    private HashMap<String , String> buildHashMap(String... entries){
+        HashMap<String , String> hashMap = new HashMap<>();
+        for(int i = 0; i < entries.length; i+= 2)
+            hashMap.put(entries[i] , entries[i+1]);
+        return hashMap;
     }
 
 }

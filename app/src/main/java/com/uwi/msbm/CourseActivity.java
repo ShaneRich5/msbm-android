@@ -1,11 +1,13 @@
 package com.uwi.msbm;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.uwi.msbm.models.Course;
+import com.uwi.msbm.utility.QueryUtilities;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +28,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +39,7 @@ public class CourseActivity extends AppCompatActivity {
 
     @Bind(R.id.toolbar) Toolbar toolbar;
     @Bind(R.id.rv_courses) RecyclerView rvCourses;
+    List<Course> courses;
 
     DBHelper dbCourse;
 
@@ -46,8 +51,14 @@ public class CourseActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         dbCourse = new DBHelper(this);
+        courses = new ArrayList<>();
 
-        List<Course> courses = dbCourse.getAllCourses();
+
+        try {
+            courses = dbCourse.getAllCourses();
+        }catch (SQLiteException e){
+            Log.d("MOODLE" , "No database");
+        }
 
         if (courses.size() == 0){
             SessionManager session = new SessionManager(this);
@@ -55,8 +66,8 @@ public class CourseActivity extends AppCompatActivity {
 
             // async, update courses in a callback instead
             courses = requestCourses(
-                    user.get(SessionManager.KEY_USER_ID),
-                    user.get(SessionManager.KEY_TOKEN));
+                    getIntent().getStringExtra(SessionManager.KEY_USER_ID),
+                    getIntent().getStringExtra(SessionManager.KEY_TOKEN));
         }
 
         setUpCourseList(courses);
@@ -64,13 +75,20 @@ public class CourseActivity extends AppCompatActivity {
 
     private List<Course> requestCourses(final String userId, final String token) {
 //        http://ourvle.mona.uwi.edu/webservice/rest/server.php?wstoken=e23c35eeda5b1799ffcea51cec0c19b2&wsfunction=core_enrol_get_users_courses&moodlewsrestformat=json&userid=9742
-        String url = Constants.MOODLE_URL + Constants.WEB_SERVICE;
+        if(token != null)
+            Log.d("Token" , token);
+        else
+            Log.d("Token" , "Null Token");
+
+        String url = QueryUtilities.buildUrl(Constants.MOODLE_URL , Constants.WEB_SERVICE , "wstoken" , token , "wsfunction" , "core_enrol_get_users_courses" , "moodlewsrestformat","json" , "userid" , userId);
+        Log.d("URL" , url);
         final List<Course> courses = new ArrayList<>();
 
         JsonArrayRequest request = new JsonArrayRequest
                 (url, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
+                        Log.d("COURSE RESPONSE" , response.toString());
 
                         for (int i = 0; i < response.length(); i++) {
                             try {
@@ -92,6 +110,7 @@ public class CourseActivity extends AppCompatActivity {
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        Log.d("XML" , error.getMessage());
                         Toast.makeText(CourseActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 })

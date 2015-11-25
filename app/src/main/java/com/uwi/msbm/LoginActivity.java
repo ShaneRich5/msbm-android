@@ -18,6 +18,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.uwi.msbm.utility.QueryUtilities;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,15 +32,20 @@ import butterknife.ButterKnife;
 
 public class LoginActivity extends AppCompatActivity {
 
-    @Bind(R.id.toolbar) Toolbar toolbar;
-    @Bind(R.id.et_registration_no) EditText etRegistrationNo;
-    @Bind(R.id.et_password) EditText etPassword;
-    @Bind(R.id.btn_login) Button btnLogin;
-    @Bind(R.id.layout_coordinator) CoordinatorLayout layoutContainer;
+    @Bind(R.id.toolbar)
+    Toolbar toolbar;
+    @Bind(R.id.et_registration_no)
+    EditText etRegistrationNo;
+    @Bind(R.id.et_password)
+    EditText etPassword;
+    @Bind(R.id.btn_login)
+    Button btnLogin;
+    @Bind(R.id.layout_coordinator)
+    CoordinatorLayout layoutContainer;
     String id = "";
     String token = "";
     String registrationNo = "";
-    HashMap<String , String> parametersHash;
+    HashMap<String, String> parametersHash;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +72,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void submitUserId() {
 //        http://ourvle.mona.uwi.edu/webservice/rest/server.php?wstoken=e23c35eeda5b1799ffcea51cec0c19b2&wsfunction=core_webservice_get_site_info&moodlewsrestformat=json
-        parametersHash = buildHashMap("wstoken" , token , "wsfunction" ,  "core_webservice_get_site_info" , "moodlewsrestformat" , "json");
-        String url = Constants.MOODLE_URL + Constants.WEB_SERVICE + buildQueryParameters(parametersHash);
+        String url = QueryUtilities.buildUrl(Constants.MOODLE_URL , Constants.WEB_SERVICE , "wstoken", token, "wsfunction", "core_webservice_get_site_info", "moodlewsrestformat", "json");
 
 
         JsonObjectRequest request = new JsonObjectRequest
@@ -83,7 +88,11 @@ public class LoginActivity extends AppCompatActivity {
 
                                 Snackbar.make(layoutContainer, "token: " + token + " id " + id, Snackbar.LENGTH_SHORT).show();
 
-                                startActivity(new Intent(LoginActivity.this, CourseActivity.class));
+                                Intent intent = new Intent(getApplicationContext(), CourseActivity.class);
+                                intent.putExtra(SessionManager.KEY_USER_ID , id);
+                                intent.putExtra(SessionManager.KEY_TOKEN , token);
+                                Log.d("SENT TOKEN" , token);
+                                startActivity(intent);
                             }
 
                         } catch (JSONException e) {
@@ -95,8 +104,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onErrorResponse(VolleyError error) {
 
                     }
-                })
-        {
+                }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
@@ -122,8 +130,7 @@ public class LoginActivity extends AppCompatActivity {
 //        "http://ourvle.mona.uwi.edu/login/token.php?username=620065739&password=19941206&service=moodle_mobile_app"
 
 
-        parametersHash =  buildHashMap("username" , registrationNo , "password" , password , "service" , "moodle_mobile_app");
-        String url = Constants.MOODLE_URL + Constants.LOGIN + buildQueryParameters(parametersHash);
+        String url = QueryUtilities.buildUrl(Constants.MOODLE_URL, Constants.LOGIN, "username", registrationNo, "password", password, "service", "moodle_mobile_app");
 
         JsonObjectRequest request = new JsonObjectRequest
                 (Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
@@ -136,10 +143,10 @@ public class LoginActivity extends AppCompatActivity {
 //                                    network = response.getString("network");
 //                            System.out.println("Site: " + site + "\nNetwork: " + network);
 
-                            if(response.has("token")) {
+                            if (response.has("token")) {
                                 token = response.getString("token");
-                                Log.d("MOODLE" , token);
-                            }else{
+                                Log.d("MOODLE", token);
+                            } else {
                                 Log.d("MOODLE", response.toString());
                                 Toast.makeText(getApplicationContext(), "Unexpected Error", Toast.LENGTH_SHORT);
                             }
@@ -171,26 +178,6 @@ public class LoginActivity extends AppCompatActivity {
 
         Volley.newRequestQueue(this).add(request);
 
-    }
-
-    //Builds query parameters from HashMap
-    //For example ?username=x&password=y
-    private String buildQueryParameters(Map<String , String> parameters){
-        String parameterString = "?";
-        Iterator iterator = parameters.entrySet().iterator();
-        while(iterator.hasNext()){
-            HashMap.Entry pair = (HashMap.Entry)iterator.next();
-            parameterString += String.format("%s=%s&" , pair.getKey() , pair.getValue());
-            iterator.remove();
-        }
-       return parameterString.substring(0 , parameterString.length()-1);
-    }
-
-    private HashMap<String , String> buildHashMap(String... entries){
-        HashMap<String , String> hashMap = new HashMap<>();
-        for(int i = 0; i < entries.length; i+= 2)
-            hashMap.put(entries[i] , entries[i+1]);
-        return hashMap;
     }
 
 }

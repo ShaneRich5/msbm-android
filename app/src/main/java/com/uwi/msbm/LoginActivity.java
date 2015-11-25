@@ -6,9 +6,11 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -116,7 +118,7 @@ public class LoginActivity extends AppCompatActivity {
 
 //        "http://ourvle.mona.uwi.edu/login/token.php?username=620065739&password=19941206&service=moodle_mobile_app"
 
-        String url = Constants.MOODLE_URL + Constants.LOGIN;
+        String url = Constants.MOODLE_URL + Constants.LOGIN + buildQueryParameters(registrationNo , password);
 
         JsonObjectRequest request = new JsonObjectRequest
                 (Request.Method.POST, url, null, new Response.Listener<JSONObject>() {
@@ -129,7 +131,13 @@ public class LoginActivity extends AppCompatActivity {
 //                                    network = response.getString("network");
 //                            System.out.println("Site: " + site + "\nNetwork: " + network);
 
-                            token = response.getString("token");
+                            if(response.has("token")) {
+                                token = response.getString("token");
+                                Log.d("MOODLE" , token);
+                            }else{
+                                Log.d("MOODLE" , response.toString());
+                                Toast.makeText(getApplicationContext() , "Unexpected Error" , Toast.LENGTH_SHORT);
+                            }
 
                             submitUserId();
 
@@ -161,6 +169,10 @@ public class LoginActivity extends AppCompatActivity {
 
         Volley.newRequestQueue(this).add(request);
 
+    }
+
+    private String buildQueryParameters(String username , String password){
+       return String.format("?username=%s&password=%s&service=moodle_mobile_app" , username , password);
     }
 
 }

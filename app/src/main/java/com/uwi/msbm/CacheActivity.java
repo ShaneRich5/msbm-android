@@ -14,6 +14,10 @@ import android.widget.TextView;
 
 import com.uwi.msbm.models.Course;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -56,7 +60,7 @@ public class CacheActivity extends AppCompatActivity {
             while((content = fis.read()) != -1){
                 input += (char)content;
             }
-            Log.d("FILE READ" , input);
+            parseCourses(input);
         }catch (IOException e){
             Log.d("FILE READ", e.getMessage());
 
@@ -70,6 +74,27 @@ public class CacheActivity extends AppCompatActivity {
         }
     }
 
+    private void parseCourses(String jsonString) {
+        try {
+            JSONArray jsonArray = new JSONArray(jsonString);
+            for(int index =0; index < jsonArray.length(); index++){
+
+                JSONObject json = jsonArray.getJSONObject(index);
+                Course course = new Course();
+                course.setCode(json.getInt("id"));
+                course.setShortName(json.getString("shortname"));
+                course.setFullName(json.getString("fullname"));
+                course.setParticipantCount(json.getInt("enrolledusercount"));
+
+                courses.add(course);
+
+            }
+            setUpCourseList(courses);
+
+        } catch (JSONException e) {
+            Log.d("FILE JSON" , e.getMessage());
+        }
+    }
 
 
     private void setUpCourseList(List<Course> courses) {

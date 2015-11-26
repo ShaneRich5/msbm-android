@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
@@ -44,6 +45,8 @@ public class LoginActivity extends AppCompatActivity {
     Button cacheButton;
     @Bind(R.id.layout_coordinator)
     CoordinatorLayout layoutContainer;
+    @Bind(R.id.progressBar)
+    ProgressBar bar;
     String id = "";
     String token = "";
     String registrationNo = "";
@@ -133,6 +136,8 @@ public class LoginActivity extends AppCompatActivity {
         final String password = etPassword.getText().toString();
 
         etPassword.setText("");
+        bar.setVisibility(View.VISIBLE);
+
         //btnLogin.setEnabled(false);
 
 //        "http://ourvle.mona.uwi.edu/login/token.php?username=620065739&password=19941206&service=moodle_mobile_app"
@@ -157,11 +162,11 @@ public class LoginActivity extends AppCompatActivity {
                                 Log.d("MOODLE", token);
                             } else {
                                 Log.d("MOODLE", response.toString());
-                                Toast.makeText(getApplicationContext(), "Unexpected Error", Toast.LENGTH_SHORT);
+                                Toast.makeText(getApplicationContext(), "Unexpected Error", Toast.LENGTH_SHORT).show();
                             }
 
                             submitUserId();
-
+                            bar.setVisibility(View.INVISIBLE);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

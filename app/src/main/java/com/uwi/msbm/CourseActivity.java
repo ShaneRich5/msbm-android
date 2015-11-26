@@ -26,11 +26,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -87,7 +93,7 @@ public class CourseActivity extends AppCompatActivity {
                 (url, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Log.d("COURSE RESPONSE" , response.toString());
+                        Log.d("COURSE RESPONSE", response.toString());
 
                         for (int i = 0; i < response.length(); i++) {
                             try {
@@ -106,6 +112,17 @@ public class CourseActivity extends AppCompatActivity {
                             }
                         }
                         setUpCourseList(courses);
+                        try {
+                            File file = new File(getBaseContext().getFilesDir(), "courses.json");
+                            if(file.isFile())
+                                file.delete();
+                            new File(getBaseContext().getFilesDir(), "courses.json");
+                            FileOutputStream outputStream;
+                            outputStream = openFileOutput("courses.json" , Context.MODE_PRIVATE);
+                            outputStream.write(response.toString().getBytes());
+                        }catch (IOException e){
+                            Log.d("FILE" , e.getMessage());
+                        }
                     }
 
                 }, new Response.ErrorListener() {

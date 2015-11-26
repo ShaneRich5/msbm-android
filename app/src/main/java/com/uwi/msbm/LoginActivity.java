@@ -40,6 +40,8 @@ public class LoginActivity extends AppCompatActivity {
     EditText etPassword;
     @Bind(R.id.btn_login)
     Button btnLogin;
+    @Bind(R.id.view_cached_courses)
+    Button cacheButton;
     @Bind(R.id.layout_coordinator)
     CoordinatorLayout layoutContainer;
     String id = "";
@@ -68,6 +70,12 @@ public class LoginActivity extends AppCompatActivity {
         });
 
 
+        cacheButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               startActivity(new Intent(getApplicationContext() , CacheActivity.class));
+            }
+        });
     }
 
     public void submitUserId() {
@@ -128,6 +136,7 @@ public class LoginActivity extends AppCompatActivity {
         //btnLogin.setEnabled(false);
 
 //        "http://ourvle.mona.uwi.edu/login/token.php?username=620065739&password=19941206&service=moodle_mobile_app"
+
 
 
         String url = QueryUtilities.buildUrl(Constants.MOODLE_URL, Constants.LOGIN, "username", registrationNo, "password", password, "service", "moodle_mobile_app");

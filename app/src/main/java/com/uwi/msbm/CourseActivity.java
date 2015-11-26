@@ -70,7 +70,6 @@ public class CourseActivity extends AppCompatActivity {
                     getIntent().getStringExtra(SessionManager.KEY_TOKEN));
         }
 
-        setUpCourseList(courses);
     }
 
     private List<Course> requestCourses(final String userId, final String token) {
@@ -106,7 +105,9 @@ public class CourseActivity extends AppCompatActivity {
                                 e.printStackTrace();
                             }
                         }
+                        setUpCourseList(courses);
                     }
+
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
@@ -139,8 +140,9 @@ public class CourseActivity extends AppCompatActivity {
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         rvCourses.setLayoutManager(layoutManager);
+        CourseAdapter adapter = new CourseAdapter(this , courses);
+        rvCourses.setAdapter(adapter);
 
-        CourseAdapter adapter = new CourseAdapter(this, courses);
 
 
 
@@ -160,6 +162,8 @@ public class CourseActivity extends AppCompatActivity {
         public CourseViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = mInflater.inflate(R.layout.item_course, parent, false);
             CourseViewHolder viewHolder = new CourseViewHolder(view);
+
+
             return viewHolder;
         }
 
@@ -172,20 +176,20 @@ public class CourseActivity extends AppCompatActivity {
         public void onBindViewHolder(CourseViewHolder holder, int position) {
             Course currentCourse = mCourses.get(position);
 
-            holder.code.setText(currentCourse.getCode());
             holder.shortName.setText(currentCourse.getShortName());
+            holder.fullName.setText(currentCourse.getFullName());
 
         }
 
         public class CourseViewHolder extends RecyclerView.ViewHolder {
 
             TextView shortName;
-            TextView code;
+            TextView fullName;
 
             public CourseViewHolder(View itemView) {
                 super(itemView);
                 shortName = (TextView) itemView.findViewById(R.id.short_name);
-                code = (TextView) itemView.findViewById(R.id.code);
+                fullName = (TextView) itemView.findViewById(R.id.full_name);
             }
         }
     }
